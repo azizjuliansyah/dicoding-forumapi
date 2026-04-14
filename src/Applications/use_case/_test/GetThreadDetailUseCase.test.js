@@ -16,6 +16,7 @@ describe('GetThreadDetailUseCase', () => {
       date: '2021-08-08T07:19:09.775Z',
       username: 'dicoding',
     };
+    /* eslint-disable camelcase */
     const mockComments = [
       {
         id: 'comment-1',
@@ -51,6 +52,7 @@ describe('GetThreadDetailUseCase', () => {
     const mockLikeCounts = [
       { comment_id: 'comment-1', like_count: 2 },
     ];
+    /* eslint-enable camelcase */
 
     /** creating dependency of use case */
     const mockThreadRepository = new ThreadRepository();

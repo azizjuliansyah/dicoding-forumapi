@@ -1,5 +1,4 @@
 import { vi, describe, it, expect } from 'vitest';
-import NewThread from '../../../Domains/threads/entities/NewThread.js';
 import AddedThread from '../../../Domains/threads/entities/AddedThread.js';
 import ThreadRepository from '../../../Domains/threads/ThreadRepository.js';
 import AddThreadUseCase from '../AddThreadUseCase.js';
