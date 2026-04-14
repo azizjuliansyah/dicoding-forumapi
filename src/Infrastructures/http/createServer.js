@@ -28,7 +28,7 @@ const createServer = async (container) => {
   app.use('/threads', likes(container));
 
   // Global error handler
-  app.use((error, req, res, next) => {
+  app.use((error, req, res, next) => { // eslint-disable-line no-unused-vars
     // bila response tersebut error, tangani sesuai kebutuhan
     const translatedError = DomainErrorTranslator.translate(error);
 
