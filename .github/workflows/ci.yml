@@ -1,0 +1,66 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: dicoding
+          POSTGRES_PASSWORD: dicoding
+          POSTGRES_DB: forumapi_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ['22.17.1']
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run linting
+        run: npm run lint
+
+      - name: Run database migrations
+        env:
+          NODE_ENV: test
+          PGHOST: localhost
+          PGUSER: dicoding
+          PGDATABASE: forumapi_test
+          PGPASSWORD: dicoding
+          PGPORT: 5432
+        run: npm run migrate:test
+
+      - name: Run tests
+        env:
+          NODE_ENV: test
+          PGHOST: localhost
+          PGUSER: dicoding
+          PGDATABASE: forumapi_test
+          PGPASSWORD: dicoding
+          PGPORT: 5432
+          ACCESS_TOKEN_KEY: ${{ secrets.ACCESS_TOKEN_KEY || '8b7b4ef375716ab08b2a3951b29d52fc00b1c855f9d1a847229b8c5935bef56d9d271e76a9cf08e614300395c3b90ebe559cf968a0741b18c9505549394b2c70' }}
+          REFRESH_TOKEN_KEY: ${{ secrets.REFRESH_TOKEN_KEY || '5078605e074a462b1460608fcbe0d0963c644402e04ad334455ff5a856cb43fd99825861dde02957d5e3184c90c532ca7d0249df20fe93d535632f3d11be7bad' }}
+        run: npm run test
