@@ -53,7 +53,7 @@ jobs:
           PGDATABASE: forumapi_test
           PGPASSWORD: dicoding
           PGPORT: 5432
-        run: npm run migrate:test
+        run: npm run migrate:test up
 
       - name: Run tests
         env:
