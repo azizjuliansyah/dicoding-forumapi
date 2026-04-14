@@ -1,0 +1,16 @@
+node_modules
+npm-debug.log
+.env
+.test.env
+coverage
+tests
+migrations/_test
+.gitignore
+Dockerfile
+docker-compose.yml
+README.md
+eslint.config.js
+vitest.config.js
+# Dist and build if any
+dist
+build
