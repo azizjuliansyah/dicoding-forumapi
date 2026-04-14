@@ -15,6 +15,11 @@ const createServer = async (container) => {
   app.use(express.json());
 
   // Register routes
+  app.get('/', (req, res) => {
+    res.json({
+      data: 'Hello world!',
+    });
+  });
   app.use('/users', users(container));
   app.use('/authentications', auths(container));
   app.use('/threads', threads(container));
@@ -23,7 +28,7 @@ const createServer = async (container) => {
   app.use('/threads', likes(container));
 
   // Global error handler
-  app.use((error, req, res) => {
+  app.use((error, req, res, next) => {
     // bila response tersebut error, tangani sesuai kebutuhan
     const translatedError = DomainErrorTranslator.translate(error);
 

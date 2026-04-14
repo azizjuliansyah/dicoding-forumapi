@@ -99,9 +99,9 @@ describe('CommentLikeRepositoryPostgres', () => {
       await CommentLikesTableTestHelper.addLike({ id: 'like-7', commentId: 'comment-6', userId: 'user-6' });
       await CommentLikesTableTestHelper.addLike({ id: 'like-8', commentId: 'comment-6', userId: 'user-7' });
       const commentLikeRepository = new CommentLikeRepositoryPostgres(pool, {});
-      const likesCount = await commentLikeRepository.getLikesCountByCommentId('comment-123');
+      const likesCount = await commentLikeRepository.getLikeCountByCommentId('comment-6');
 
-      expect(likesCount).toBe(1);
+      expect(likesCount).toBe(2);
     });
   });
 
