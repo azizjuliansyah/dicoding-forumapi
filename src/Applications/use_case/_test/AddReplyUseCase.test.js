@@ -1,5 +1,4 @@
 import { vi, describe, it, expect } from 'vitest';
-import NewReply from '../../../Domains/replies/entities/NewReply.js';
 import AddedReply from '../../../Domains/replies/entities/AddedReply.js';
 import ReplyRepository from '../../../Domains/replies/ReplyRepository.js';
 import CommentRepository from '../../../Domains/comments/CommentRepository.js';

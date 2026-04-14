@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - main
+      - master
   pull_request:
     branches:
       - main
+      - master
 
 jobs:
   test:
@@ -34,7 +36,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ['22.17.1']
+          node-version: '22.17.1'
           cache: 'npm'
 
       - name: Install dependencies
@@ -51,7 +53,7 @@ jobs:
           PGDATABASE: forumapi_test
           PGPASSWORD: dicoding
           PGPORT: 5432
-        run: npm run migrate:test
+        run: npm run migrate:test up
 
       - name: Run tests
         env:

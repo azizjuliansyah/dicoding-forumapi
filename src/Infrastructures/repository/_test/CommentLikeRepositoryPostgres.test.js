@@ -98,13 +98,10 @@ describe('CommentLikeRepositoryPostgres', () => {
       await CommentsTableTestHelper.addComment({ id: 'comment-6', threadId: 'thread-6', owner: 'user-6' });
       await CommentLikesTableTestHelper.addLike({ id: 'like-7', commentId: 'comment-6', userId: 'user-6' });
       await CommentLikesTableTestHelper.addLike({ id: 'like-8', commentId: 'comment-6', userId: 'user-7' });
-      const commentLikeRepositoryPostgres = new CommentLikeRepositoryPostgres(pool, {});
+      const commentLikeRepository = new CommentLikeRepositoryPostgres(pool, {});
+      const likesCount = await commentLikeRepository.getLikeCountByCommentId('comment-6');
 
-      // Action
-      const likeCount = await commentLikeRepositoryPostgres.getLikeCountByCommentId('comment-6');
-
-      // Assert
-      expect(likeCount).toBe(2);
+      expect(likesCount).toBe(2);
     });
   });
 
@@ -116,7 +113,7 @@ describe('CommentLikeRepositoryPostgres', () => {
       await ThreadsTableTestHelper.addThread({ id: 'thread-4', owner: 'user-4' });
       await CommentsTableTestHelper.addComment({ id: 'comment-4', threadId: 'thread-4', owner: 'user-4' });
       await CommentsTableTestHelper.addComment({ id: 'comment-5', threadId: 'thread-4', owner: 'user-4' });
-      
+
       await CommentLikesTableTestHelper.addLike({ id: 'like-4', commentId: 'comment-4', userId: 'user-4' });
       await CommentLikesTableTestHelper.addLike({ id: 'like-5', commentId: 'comment-4', userId: 'user-5' });
       await CommentLikesTableTestHelper.addLike({ id: 'like-6', commentId: 'comment-5', userId: 'user-4' });
@@ -130,7 +127,7 @@ describe('CommentLikeRepositoryPostgres', () => {
       expect(likeCounts).toHaveLength(2);
       const comment1Likes = likeCounts.find((lc) => lc.comment_id === 'comment-4');
       const comment2Likes = likeCounts.find((lc) => lc.comment_id === 'comment-5');
-      
+
       expect(parseInt(comment1Likes.like_count, 10)).toBe(2);
       expect(parseInt(comment2Likes.like_count, 10)).toBe(1);
     });
