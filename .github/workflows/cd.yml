@@ -24,14 +24,6 @@ jobs:
             -o /usr/local/bin/cloudflared
           chmod +x /usr/local/bin/cloudflared
 
-      - name: Debug SSH key
-        run: |
-          echo "=== Raw secret (HAPUS SETELAH DEBUG) ==="
-          cat ~/.ssh/dicoding_forumapi_github
-          
-          echo "=== Hex 20 byte pertama ==="
-          xxd ~/.ssh/dicoding_forumapi_github | head -3
-
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
@@ -39,22 +31,45 @@ jobs:
           chmod 600 ~/.ssh/dicoding_forumapi_github
 
           cat > ~/.ssh/config << 'EOF'
-          Host ssh.azizdev.my.id
-            HostName ssh.azizdev.my.id
-            User ubuntu
-            IdentityFile ~/.ssh/dicoding_forumapi_github
-            IdentitiesOnly yes
-            PreferredAuthentications publickey
-            ProxyCommand cloudflared access ssh --hostname ssh.azizdev.my.id --id ${{ secrets.CF_ACCESS_CLIENT_ID }} --secret ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
-            StrictHostKeyChecking no
-          EOF
+Host ssh.azizdev.my.id
+  HostName ssh.azizdev.my.id
+  User ubuntu
+  IdentityFile ~/.ssh/dicoding_forumapi_github
+  IdentitiesOnly yes
+  PreferredAuthentications publickey
+  ProxyCommand cloudflared access ssh --hostname ssh.azizdev.my.id --id ${{ secrets.CF_ACCESS_CLIENT_ID }} --secret ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
+  StrictHostKeyChecking no
+EOF
           chmod 600 ~/.ssh/config
 
-          # Verifikasi fingerprint key
-          ssh-keygen -l -f ~/.ssh/dicoding_forumapi_github
+      - name: Debug SSH key
+        run: |
+          echo "=== Jumlah baris ==="
+          wc -l ~/.ssh/dicoding_forumapi_github
 
-          # Test koneksi SSH
-          ssh ubuntu@ssh.azizdev.my.id echo "SSH OK"
+          echo "=== Baris pertama ==="
+          head -1 ~/.ssh/dicoding_forumapi_github
+
+          echo "=== Baris terakhir ==="
+          tail -1 ~/.ssh/dicoding_forumapi_github
+
+          echo "=== Hex 20 byte pertama ==="
+          xxd ~/.ssh/dicoding_forumapi_github | head -3
+
+          echo "=== Hex 20 byte terakhir ==="
+          xxd ~/.ssh/dicoding_forumapi_github | tail -3
+
+          echo "=== Cek Windows line endings ==="
+          cat -A ~/.ssh/dicoding_forumapi_github | head -3
+
+          echo "=== Fingerprint (kalau valid) ==="
+          ssh-keygen -l -f ~/.ssh/dicoding_forumapi_github || echo "GAGAL: key tidak valid"
+
+          echo "=== Isi SSH config ==="
+          cat ~/.ssh/config
+
+          echo "=== Test SSH verbose ==="
+          ssh -vvv ubuntu@ssh.azizdev.my.id echo "SSH OK" 2>&1 || true
 
       - name: Build Docker image
         run: |
