@@ -32,44 +32,42 @@ jobs:
       - name: Save Docker image
         run: docker save dicoding_forumapi:latest | gzip > forumapi.tar.gz
 
-      - name: Debug SSH verbose
+      - name: Setup SSH, Copy & Deploy
         run: |
-          ssh -vvv -F ~/.ssh/config ${{ secrets.SSH_USER }}@ssh.azizdev.my.id echo "test" 2>&1 || true
-          
-      - name: Setup SSH config untuk Cloudflare
-        run: |
+          # Setup SSH
           mkdir -p ~/.ssh
-
-          # Gunakan printf agar newline terjaga
           printf '%s\n' "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/dicoding_forumapi_github
           chmod 600 ~/.ssh/dicoding_forumapi_github
 
-          # Verifikasi key valid
-          ssh-keygen -l -f ~/.ssh/dicoding_forumapi_github
-
-          cat >> ~/.ssh/config << EOF
+          cat > ~/.ssh/config << EOF
           Host ssh.azizdev.my.id
             HostName ssh.azizdev.my.id
             User ${{ secrets.SSH_USER }}
             IdentityFile ~/.ssh/dicoding_forumapi_github
             ProxyCommand cloudflared access ssh --hostname ssh.azizdev.my.id --id ${{ secrets.CF_ACCESS_CLIENT_ID }} --secret ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
             StrictHostKeyChecking no
+            IdentitiesOnly yes
           EOF
           chmod 600 ~/.ssh/config
 
-      - name: Copy image ke server
-        run: |
+          # Verifikasi config
+          cat ~/.ssh/config
+
+          # Copy image ke server
           scp -F ~/.ssh/config forumapi.tar.gz ${{ secrets.SSH_USER }}@ssh.azizdev.my.id:/tmp/
 
-      - name: Deploy via SSH
-        run: |
+          # Deploy
           ssh -F ~/.ssh/config ${{ secrets.SSH_USER }}@ssh.azizdev.my.id << 'ENDSSH'
-            cd /opt/dicoding_forumapi
-            docker load < /tmp/forumapi.tar.gz
-            docker compose up -d --remove-orphans
-            rm /tmp/forumapi.tar.gz
-            docker image prune -f
+          cd /opt/dicoding_forumapi
+          docker load < /tmp/forumapi.tar.gz
+          docker compose up -d --remove-orphans
+          rm /tmp/forumapi.tar.gz
+          docker image prune -f
           ENDSSH
+
+      - name: Debug SSH verbose
+        run: |
+          ssh -vvv -F ~/.ssh/config ${{ secrets.SSH_USER }}@ssh.azizdev.my.id echo "test" 2>&1 || true
 
       - name: Verifikasi deployment
         run: |
