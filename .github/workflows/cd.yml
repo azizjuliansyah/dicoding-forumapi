@@ -32,6 +32,10 @@ jobs:
       - name: Save Docker image
         run: docker save dicoding_forumapi:latest | gzip > forumapi.tar.gz
 
+      - name: Debug SSH verbose
+        run: |
+          ssh -vvv -F ~/.ssh/config ${{ secrets.SSH_USER }}@ssh.azizdev.my.id echo "test" 2>&1 || true
+          
       - name: Setup SSH config untuk Cloudflare
         run: |
           mkdir -p ~/.ssh
