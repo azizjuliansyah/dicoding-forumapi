@@ -32,62 +32,41 @@ jobs:
       - name: Save Docker image
         run: docker save dicoding_forumapi:latest | gzip > forumapi.tar.gz
 
+      - name: Setup SSH config untuk Cloudflare
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/dicoding_forumapi_github
+          chmod 600 ~/.ssh/dicoding_forumapi_github
+          cat >> ~/.ssh/config << EOF
+          Host ssh.azizdev.my.id
+            HostName ssh.azizdev.my.id
+            User ${{ secrets.SSH_USER }}
+            IdentityFile ~/.ssh/dicoding_forumapi_github
+            ProxyCommand cloudflared access ssh --hostname ssh.azizdev.my.id --id ${{ secrets.CF_ACCESS_CLIENT_ID }} --secret ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
+            StrictHostKeyChecking no
+          EOF
+          chmod 600 ~/.ssh/config
+
       - name: Copy image ke server
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ssh.azizdev.my.id
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: 22
-          source: "forumapi.tar.gz"
-          target: "/tmp/"
-          proxy_host: ssh.azizdev.my.id
-          proxy_port: 22
-          proxy_username: ${{ secrets.SSH_USER }}
-          proxy_key: ${{ secrets.SSH_PRIVATE_KEY }}
-          use_insecure_cipher: false
-          extra_args: >-
-            -o ProxyCommand="cloudflared access ssh
-            --hostname ssh.azizdev.my.id
-            --id ${{ secrets.CF_ACCESS_CLIENT_ID }}
-            --secret ${{ secrets.CF_ACCESS_CLIENT_SECRET }}"
+        run: |
+          scp -F ~/.ssh/config forumapi.tar.gz ${{ secrets.SSH_USER }}@ssh.azizdev.my.id:/tmp/
 
       - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ssh.azizdev.my.id
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: 22
-          proxy_url: "ssh.azizdev.my.id"
-          request_pty: true
-          script: |
+        run: |
+          ssh -F ~/.ssh/config ${{ secrets.SSH_USER }}@ssh.azizdev.my.id << 'ENDSSH'
             cd /opt/dicoding_forumapi
             docker load < /tmp/forumapi.tar.gz
             docker compose up -d --remove-orphans
             rm /tmp/forumapi.tar.gz
             docker image prune -f
-          ssh_args: >-
-            -o ProxyCommand="cloudflared access ssh
-            --hostname ssh.azizdev.my.id
-            --id ${{ secrets.CF_ACCESS_CLIENT_ID }}
-            --secret ${{ secrets.CF_ACCESS_CLIENT_SECRET }}"
+          ENDSSH
 
       - name: Verifikasi deployment
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ssh.azizdev.my.id
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: 22
-          ssh_args: >-
-            -o ProxyCommand="cloudflared access ssh
-            --hostname ssh.azizdev.my.id
-            --id ${{ secrets.CF_ACCESS_CLIENT_ID }}
-            --secret ${{ secrets.CF_ACCESS_CLIENT_SECRET }}"
-          script: |
+        run: |
+          ssh -F ~/.ssh/config ${{ secrets.SSH_USER }}@ssh.azizdev.my.id << 'ENDSSH'
             if docker ps | grep -q dicoding_forumapi-app; then
               echo "Deployment berhasil!"
             else
               echo "Deployment gagal!" && exit 1
             fi
+          ENDSSH
