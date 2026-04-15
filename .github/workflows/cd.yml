@@ -45,7 +45,7 @@ jobs:
           cat > ~/.ssh/config << EOF
           Host ssh.azizdev.my.id
             HostName ssh.azizdev.my.id
-            User ${{ secrets.SSH_USER }}
+            User ubuntu
             IdentityFile ~/.ssh/dicoding_forumapi_github
             ProxyCommand cloudflared access ssh --hostname ssh.azizdev.my.id --id ${{ secrets.CF_ACCESS_CLIENT_ID }} --secret ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
             StrictHostKeyChecking no
@@ -57,13 +57,13 @@ jobs:
           ssh-keygen -l -f ~/.ssh/dicoding_forumapi_github
           
           # Test SSH verbose dulu sebelum SCP
-          ssh -vvv ${{ secrets.SSH_USER }}@ssh.azizdev.my.id echo "SSH OK" 2>&1
+          ssh -vvv ubuntu@ssh.azizdev.my.id echo "SSH OK" 2>&1
           
           # Copy image ke server
-          scp -F ~/.ssh/config forumapi.tar.gz ${{ secrets.SSH_USER }}@ssh.azizdev.my.id:/tmp/
+          scp -F ~/.ssh/config forumapi.tar.gz ubuntu@ssh.azizdev.my.id:/tmp/
           
           # Deploy
-          ssh -F ~/.ssh/config ${{ secrets.SSH_USER }}@ssh.azizdev.my.id << 'ENDSSH'
+          ssh -F ~/.ssh/config ubuntu@ssh.azizdev.my.id << 'ENDSSH'
           cd /opt/dicoding_forumapi
           docker load < /tmp/forumapi.tar.gz
           docker compose up -d --remove-orphans
@@ -73,7 +73,7 @@ jobs:
 
       - name: Verifikasi deployment
         run: |
-          ssh -F ~/.ssh/config ${{ secrets.SSH_USER }}@ssh.azizdev.my.id << 'ENDSSH'
+          ssh -F ~/.ssh/config ubuntu@ssh.azizdev.my.id << 'ENDSSH'
             if docker ps | grep -q dicoding_forumapi-app; then
               echo "Deployment berhasil!"
             else
