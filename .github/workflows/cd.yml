@@ -37,6 +37,10 @@ jobs:
           mkdir -p ~/.ssh
           printf '%s\n' "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/dicoding_forumapi_github
           chmod 600 ~/.ssh/dicoding_forumapi_github
+          
+          # Start SSH agent and add the key
+          eval "$(ssh-agent -s)"
+          ssh-add ~/.ssh/dicoding_forumapi_github
 
           cat > ~/.ssh/config << EOF
           Host ssh.azizdev.my.id
@@ -48,16 +52,16 @@ jobs:
             IdentitiesOnly yes
           EOF
           chmod 600 ~/.ssh/config
-
+          
           # Cek fingerprint key yang dipakai
           ssh-keygen -l -f ~/.ssh/dicoding_forumapi_github
-
+          
           # Test SSH verbose dulu sebelum SCP
           ssh -vvv ${{ secrets.SSH_USER }}@ssh.azizdev.my.id echo "SSH OK" 2>&1
-
+          
           # Copy image ke server
           scp -F ~/.ssh/config forumapi.tar.gz ${{ secrets.SSH_USER }}@ssh.azizdev.my.id:/tmp/
-
+          
           # Deploy
           ssh -F ~/.ssh/config ${{ secrets.SSH_USER }}@ssh.azizdev.my.id << 'ENDSSH'
           cd /opt/dicoding_forumapi
