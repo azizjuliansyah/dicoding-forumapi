@@ -20,6 +20,13 @@ const createServer = async (container) => {
       data: 'Hello world!',
     });
   });
+
+  // Register routes
+  app.get('/test', (req, res) => {
+    res.json({
+      data: 'Hello world! test',
+    });
+  });
   app.use('/users', users(container));
   app.use('/authentications', auths(container));
   app.use('/threads', threads(container));
