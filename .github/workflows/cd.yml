@@ -42,34 +42,34 @@ jobs:
           EOF
           chmod 600 ~/.ssh/config
 
-      # - name: Debug SSH key
-      #   run: |
-      #     echo "=== Jumlah baris ==="
-      #     wc -l ~/.ssh/dicoding_forumapi_github
+      - name: Debug SSH key
+        run: |
+          echo "=== Jumlah baris ==="
+          wc -l ~/.ssh/dicoding_forumapi_github
 
-      #     echo "=== Baris pertama ==="
-      #     head -1 ~/.ssh/dicoding_forumapi_github
+          echo "=== Baris pertama ==="
+          head -1 ~/.ssh/dicoding_forumapi_github
 
-      #     echo "=== Baris terakhir ==="
-      #     tail -1 ~/.ssh/dicoding_forumapi_github
+          echo "=== Baris terakhir ==="
+          tail -1 ~/.ssh/dicoding_forumapi_github
 
-      #     echo "=== Hex 20 byte pertama ==="
-      #     xxd ~/.ssh/dicoding_forumapi_github | head -3
+          echo "=== Hex 20 byte pertama ==="
+          xxd ~/.ssh/dicoding_forumapi_github | head -3
 
-      #     echo "=== Hex 20 byte terakhir ==="
-      #     xxd ~/.ssh/dicoding_forumapi_github | tail -3
+          echo "=== Hex 20 byte terakhir ==="
+          xxd ~/.ssh/dicoding_forumapi_github | tail -3
 
-      #     echo "=== Cek Windows line endings ==="
-      #     cat -A ~/.ssh/dicoding_forumapi_github | head -3
+          echo "=== Cek Windows line endings ==="
+          cat -A ~/.ssh/dicoding_forumapi_github | head -3
 
-      #     echo "=== Fingerprint (kalau valid) ==="
-      #     ssh-keygen -l -f ~/.ssh/dicoding_forumapi_github || echo "GAGAL: key tidak valid"
+          echo "=== Fingerprint (kalau valid) ==="
+          ssh-keygen -l -f ~/.ssh/dicoding_forumapi_github || echo "GAGAL: key tidak valid"
 
-      #     echo "=== Isi SSH config ==="
-      #     cat ~/.ssh/config
+          echo "=== Isi SSH config ==="
+          cat ~/.ssh/config
 
-      #     echo "=== Test SSH verbose ==="
-      #     ssh -vvv ubuntu@ssh.azizdev.my.id echo "SSH OK" 2>&1 || true
+          echo "=== Test SSH verbose ==="
+          ssh -vvv ubuntu@ssh.azizdev.my.id echo "SSH OK" 2>&1 || true
 
       - name: Build Docker image
         run: |
