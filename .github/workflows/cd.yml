@@ -32,15 +32,17 @@ jobs:
       - name: Save Docker image
         run: docker save dicoding_forumapi:latest | gzip > forumapi.tar.gz
 
-      - name: Debug SSH key
-        run: |
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" | ssh-keygen -l -f -
-
       - name: Setup SSH config untuk Cloudflare
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/dicoding_forumapi_github
+
+          # Gunakan printf agar newline terjaga
+          printf '%s\n' "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/dicoding_forumapi_github
           chmod 600 ~/.ssh/dicoding_forumapi_github
+
+          # Verifikasi key valid
+          ssh-keygen -l -f ~/.ssh/dicoding_forumapi_github
+
           cat >> ~/.ssh/config << EOF
           Host ssh.azizdev.my.id
             HostName ssh.azizdev.my.id
