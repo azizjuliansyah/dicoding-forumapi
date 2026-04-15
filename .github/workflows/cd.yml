@@ -1,0 +1,71 @@
+name: Continuous Deployment
+
+on:
+  workflow_run:
+    workflows: ["Continuous Integration"]
+    types:
+      - completed
+    branches:
+      - main
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: |
+          docker build -t dicoding_forumapi:${{ github.sha }} .
+          docker tag dicoding_forumapi:${{ github.sha }} dicoding_forumapi:latest
+
+      - name: Save Docker image
+        run: docker save dicoding_forumapi:latest | gzip > forumapi.tar.gz
+
+      - name: Copy image ke server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          source: "forumapi.tar.gz"
+          target: "/tmp/"
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            cd /opt/dicoding_forumapi
+
+            # Load image baru
+            docker load < /tmp/forumapi.tar.gz
+
+            # Restart dengan compose
+            docker compose up -d --remove-orphans
+
+            # Cleanup
+            rm /tmp/forumapi.tar.gz
+            docker image prune -f
+
+      - name: Verifikasi deployment
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            if docker ps | grep -q dicoding_forumapi-app; then
+              echo "Deployment berhasil!"
+            else
+              echo "Deployment gagal!" && exit 1
+            fi
