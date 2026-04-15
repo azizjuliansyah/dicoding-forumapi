@@ -7,6 +7,7 @@ on:
       - completed
     branches:
       - main
+      - master
 
 jobs:
   deploy:
@@ -16,6 +17,12 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Install cloudflared
+        run: |
+          curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 \
+            -o /usr/local/bin/cloudflared
+          chmod +x /usr/local/bin/cloudflared
 
       - name: Build Docker image
         run: |
@@ -28,40 +35,56 @@ jobs:
       - name: Copy image ke server
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: ${{ secrets.SSH_HOST }}
+          host: ssh.azizdev.my.id
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.SSH_PORT }}
+          port: 22
           source: "forumapi.tar.gz"
           target: "/tmp/"
+          proxy_host: ssh.azizdev.my.id
+          proxy_port: 22
+          proxy_username: ${{ secrets.SSH_USER }}
+          proxy_key: ${{ secrets.SSH_PRIVATE_KEY }}
+          use_insecure_cipher: false
+          extra_args: >-
+            -o ProxyCommand="cloudflared access ssh
+            --hostname ssh.azizdev.my.id
+            --id ${{ secrets.CF_ACCESS_CLIENT_ID }}
+            --secret ${{ secrets.CF_ACCESS_CLIENT_SECRET }}"
 
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.SSH_HOST }}
+          host: ssh.azizdev.my.id
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.SSH_PORT }}
+          port: 22
+          proxy_url: "ssh.azizdev.my.id"
+          request_pty: true
           script: |
             cd /opt/dicoding_forumapi
-
-            # Load image baru
             docker load < /tmp/forumapi.tar.gz
-
-            # Restart dengan compose
             docker compose up -d --remove-orphans
-
-            # Cleanup
             rm /tmp/forumapi.tar.gz
             docker image prune -f
+          ssh_args: >-
+            -o ProxyCommand="cloudflared access ssh
+            --hostname ssh.azizdev.my.id
+            --id ${{ secrets.CF_ACCESS_CLIENT_ID }}
+            --secret ${{ secrets.CF_ACCESS_CLIENT_SECRET }}"
 
       - name: Verifikasi deployment
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.SSH_HOST }}
+          host: ssh.azizdev.my.id
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.SSH_PORT }}
+          port: 22
+          ssh_args: >-
+            -o ProxyCommand="cloudflared access ssh
+            --hostname ssh.azizdev.my.id
+            --id ${{ secrets.CF_ACCESS_CLIENT_ID }}
+            --secret ${{ secrets.CF_ACCESS_CLIENT_SECRET }}"
           script: |
             if docker ps | grep -q dicoding_forumapi-app; then
               echo "Deployment berhasil!"
