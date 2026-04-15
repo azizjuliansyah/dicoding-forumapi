@@ -47,9 +47,10 @@ jobs:
             HostName ssh.azizdev.my.id
             User ubuntu
             IdentityFile ~/.ssh/dicoding_forumapi_github
+            IdentitiesOnly yes
+            PreferredAuthentications publickey
             ProxyCommand cloudflared access ssh --hostname ssh.azizdev.my.id --id ${{ secrets.CF_ACCESS_CLIENT_ID }} --secret ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
             StrictHostKeyChecking no
-            IdentitiesOnly yes
           EOF
           chmod 600 ~/.ssh/config
           
