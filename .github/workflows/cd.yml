@@ -55,6 +55,18 @@ jobs:
           # Test SSH verbose dulu sebelum SCP
           ssh -vvv ${{ secrets.SSH_USER }}@ssh.azizdev.my.id echo "SSH OK" 2>&1
 
+          # Copy image ke server
+          scp -F ~/.ssh/config forumapi.tar.gz ${{ secrets.SSH_USER }}@ssh.azizdev.my.id:/tmp/
+
+          # Deploy
+          ssh -F ~/.ssh/config ${{ secrets.SSH_USER }}@ssh.azizdev.my.id << 'ENDSSH'
+          cd /opt/dicoding_forumapi
+          docker load < /tmp/forumapi.tar.gz
+          docker compose up -d --remove-orphans
+          rm /tmp/forumapi.tar.gz
+          docker image prune -f
+          ENDSSH
+
       - name: Verifikasi deployment
         run: |
           ssh -F ~/.ssh/config ${{ secrets.SSH_USER }}@ssh.azizdev.my.id << 'ENDSSH'
