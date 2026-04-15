@@ -24,6 +24,14 @@ jobs:
             -o /usr/local/bin/cloudflared
           chmod +x /usr/local/bin/cloudflared
 
+      - name: Debug SSH key
+        run: |
+          echo "=== Raw secret (HAPUS SETELAH DEBUG) ==="
+          cat ~/.ssh/dicoding_forumapi_github
+          
+          echo "=== Hex 20 byte pertama ==="
+          xxd ~/.ssh/dicoding_forumapi_github | head -3
+
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
