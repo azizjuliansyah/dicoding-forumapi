@@ -22,9 +22,9 @@ const createServer = async (container) => {
   });
 
   // Register routes
-  app.get('/test', (req, res) => {
+  app.get('/hello-world', (req, res) => {
     res.json({
-      data: 'Hello world! test',
+      data: 'Hello world! test cd',
     });
   });
   app.use('/users', users(container));
