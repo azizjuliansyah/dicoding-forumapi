@@ -38,16 +38,5 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
 
-  cloudflared:
-    image: cloudflare/cloudflared:latest
-    container_name: dicoding_forumapi_cloudflared
-    restart: unless-stopped
-    command: tunnel --no-autoupdate run
-    network_mode: host
-    environment:
-      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
-    depends_on:
-      - app
-
 volumes:
   pgdata:
