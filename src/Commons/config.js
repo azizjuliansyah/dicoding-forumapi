@@ -1,4 +1,4 @@
-/* istanbul ignore file */
+/* v8 ignore start */
 import dotenv from 'dotenv';
 import path from 'path';
 
@@ -32,3 +32,4 @@ const config = {
 };
 
 export default config;
+/* v8 ignore stop */

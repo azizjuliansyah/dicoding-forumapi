@@ -47,11 +47,11 @@ describe('HTTP server', () => {
       const app = await createServer({});
 
       // Action
-      const response = await request(app).get('/');
+      const response = await request(app).get('/hello-world');
 
       // Assert
       expect(response.status).toEqual(200);
-      expect(response.body.data).toEqual('Hello world!');
+      expect(response.body.data).toEqual('Hello world! test cd');
     });
   });
 
